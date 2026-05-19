@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deira Dubai - Advanced Thematic GIS Dashboard</title>
+
+    <!-- Meta tags for SEO -->
+    <meta name="description"
+        content="A professional thematic WebGIS dashboard of Deira Dubai showcasing advanced land use classifications and public facilities mapping.">
+    <meta name="keywords" content="Dubai, Deira, WebGIS, Leaflet, GeoJSON, Thematic Map, GIS Dashboard">
+
+    <!-- Google Fonts for premium modern typography -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- FontAwesome Icons for clean UI cartography -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet.css standard mapping styles -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Chart.js CDN for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS styling representing professional GIS layouts -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- 1. FULLSCREEN GLASSMORPHIC LOADING SCREEN -->
+    <div id="loading-overlay">
+        <div class="loader-container">
+            <div class="glow-logo">
+                <i class="fa-solid fa-earth-americas fa-spin-slow"></i>
+            </div>
+            <h2>DEIRA DUBAI WebGIS</h2>
+            <p>Initializing cartographic layers...</p>
+            <div class="loader-bar-outer">
+                <div class="loader-bar-inner" id="loading-bar"></div>
+            </div>
+            <div class="error-handling-loader" id="loader-error-message"></div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN DASHBOARD WRAPPER -->
+    <div class="dashboard-container">
+
+        <!-- SIDEBAR - Collapsible and Animated -->
+        <aside class="sidebar" id="dashboard-sidebar">
+
+            <!-- Sidebar Header with Logo and Title -->
+            <header class="sidebar-header">
+                <div class="title-area">
+                    <div class="gis-icon-glow">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <div>
+                        <h1>Deira Dubai</h1>
+                        <h2>Thematic Map Dashboard</h2>
+                    </div>
+                </div>
+                <!-- Mobile toggle for closing sidebar -->
+                <button class="mobile-close-btn" id="mobile-sidebar-close" title="Close Panel">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </header>
+
+            <!-- Scrollable Sidebar Content Body -->
+            <div class="sidebar-scroll-body">
+
+                <!-- Project Overview Card -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <h3>Project Overview</h3>
+                    </div>
+                    <div class="glass-card overview-card">
+                        <p>An interactive thematic WebGIS visualizing <strong>Deira, Dubai</strong>'s land use
+                            classification pattern and public facility points. Developed with a high-contrast pink/magenta
+                            cartographic scheme for optimal legibility.</p>
+                    </div>
+                </section>
+
+                <!-- Location Overview Card -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <h3>Location Overview</h3>
+                    </div>
+                    <div class="glass-card overview-card">
+                        <div class="overview-image-container">
+                            <img src="deira_locator_map.png" alt="Deira Dubai Locator Map" class="overview-map-img">
+                        </div>
+                        <p style="margin-top: 12px;">
+                            <strong>Deira</strong> is the historical heart of Dubai, UAE. Bordered by the Persian Gulf and the Dubai Creek, this 143 sq km district represents a key commercial and cultural sector characterized by traditional souks, dense residential blocks, and vital public infrastructure.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Live Statistics Panel -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-chart-simple"></i>
+                        <h3>Live Metrics & Stats</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value" id="stat-facilities">0</span>
+                            <span class="stat-label">Public Facilities</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="stat-landuse">0</span>
+                            <span class="stat-label">Land Use Areas</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="stat-layers">2</span>
+                            <span class="stat-label">Active Layers</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Composition Chart Card -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <h3>Dataset Composition</h3>
+                    </div>
+                    <div class="glass-card chart-card">
+                        <div class="chart-container" style="position: relative; height: 160px; width: 100%;">
+                            <canvas id="datasetCompositionChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Custom Visibility Layer Controls -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <h3>Layer Visibility</h3>
+                    </div>
+                    <div class="glass-card layer-toggles-card">
+                        <div class="layer-control-row">
+                            <span class="layer-name"><i class="fa-solid fa-draw-polygon layer-icon-landuse"></i> Land Use
+                                Classification</span>
+                            <label class="switch-container">
+                                <input type="checkbox" id="toggle-landuse" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="layer-control-row">
+                            <span class="layer-name"><i class="fa-solid fa-circle-dot layer-icon-facility"></i> Public
+                                Facilities</span>
+                            <label class="switch-container">
+                                <input type="checkbox" id="toggle-facilities" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dynamic Selected Feature Details Card -->
+                <section class="sidebar-section" id="info-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-circle-nodes"></i>
+                        <h3>Selected Feature Information</h3>
+                    </div>
+                    <div class="glass-card info-card" id="info-card-container">
+                        <!-- Empty State (Shown when no feature is selected) -->
+                        <div id="info-empty-state" class="empty-state">
+                            <i class="fa-solid fa-arrow-pointer animate-float"></i>
+                            <p>Click on any facility point or land use polygon on the map to display detailed attributes
+                                here.</p>
+                        </div>
+
+                        <!-- Dynamic details loaded here -->
+                        <div id="info-details-view" class="hidden">
+                            <div class="feature-meta-header">
+                                <span class="feature-badge" id="info-badge-type">Land Use</span>
+                                <button id="info-zoom-btn" class="info-action-btn" title="Focus View">
+                                    <i class="fa-solid fa-magnifying-glass-location"></i> Zoom To
+                                </button>
+                            </div>
+                            <h4 id="info-feature-title">Feature Name</h4>
+
+                            <div class="scroll-table-container">
+                                <table class="attributes-table" id="info-attributes-table">
+                                    <!-- Attributes populated here -->
+                                </table>
+                            </div>
+
+                            <div class="centroid-coordinates">
+                                <i class="fa-solid fa-location-crosshairs"></i>
+                                <span id="info-feature-coords">Lat: --, Lng: --</span>
+                            </div>
+
+                            <button id="info-clear-btn" class="clear-selection-btn">
+                                <i class="fa-solid fa-eraser"></i> Clear Selection
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Thematic Map Legend Card -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-legend"></i>
+                        <h3>Interactive Legend</h3>
+                    </div>
+                    <div class="glass-card legend-card">
+                        <div class="legend-group">
+                            <div class="legend-header-toggle" id="legend-header-landuse">
+                                <span>Land Use Categories</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                            <div class="legend-sub-list" id="legend-list-landuse">
+                                <div class="legend-item-row"><span class="color-chip"
+                                        style="background-color: #c2185b;"></span> Residential</div>
+                                <div class="legend-item-row"><span class="color-chip"
+                                        style="background-color: #880e4f;"></span> Industrial</div>
+                                <div class="legend-item-row"><span class="color-chip"
+                                        style="background-color: #f48fb1;"></span> Recreation & Parks</div>
+                                <div class="legend-item-row"><span class="color-chip"
+                                        style="background-color: #d81b60;"></span> Forest & Vegetation</div>
+                                <div class="legend-item-row"><span class="color-chip"
+                                        style="background-color: #ff4081;"></span> Construction</div>
+                                <div class="legend-item-row"><span class="color-chip"
+                                        style="background-color: #ad1457;"></span> Commercial / Public</div>
+                                <div class="legend-item-row"><span class="color-chip"
+                                        style="background-color: #ea80fc;"></span> Other Built Area</div>
+                            </div>
+                        </div>
+
+                        <div class="legend-group">
+                            <div class="legend-header-toggle" id="legend-header-facilities">
+                                <span>Public Facility Types</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                            <div class="legend-sub-list" id="legend-list-facilities">
+                                <div class="legend-item-row"><span class="marker-chip"
+                                        style="background-color: #ea80fc; border-color: #ffffff;"></span> Places of Worship
+                                </div>
+                                <div class="legend-item-row"><span class="marker-chip"
+                                        style="background-color: #80d8ff; border-color: #ffffff;"></span> Libraries &
+                                    Education</div>
+                                <div class="legend-item-row"><span class="marker-chip"
+                                        style="background-color: #b9f6ca; border-color: #ffffff;"></span> Community Centres
+                                </div>
+                                <div class="legend-item-row"><span class="marker-chip"
+                                        style="background-color: #ff80ab; border-color: #ffffff;"></span> Public Hygiene
+                                    (Toilets)</div>
+                                <div class="legend-item-row"><span class="marker-chip"
+                                        style="background-color: #ff4081; border-color: #ffffff;"></span> Other
+                                    Infrastructure</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Metadata/CRS Card -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-database"></i>
+                        <h3>GIS Metadata</h3>
+                    </div>
+                    <div class="glass-card metadata-card">
+                        <ul>
+                            <li><span>CRS Projection:</span> <strong>WGS 84 / Web Mercator</strong></li>
+                            <li><span>Bounding Box:</span> <strong>Deira District, Dubai</strong></li>
+                            <li><span>GeoJSON Layers:</span> <strong>2 Dynamic Datasets</strong></li>
+                            <li><span>Tile Source:</span> <strong>OpenStreetMap Darkened</strong></li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Map Information / Author Card -->
+                <section class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <h3>Map Information</h3>
+                    </div>
+                    <div class="glass-card metadata-card">
+                        <ul>
+                            <li><span>Study Area:</span> <strong>Dubai, Deira</strong></li>
+                            <li><span>Data Source:</span> <strong>OpenStreetMap (OSM)</strong></li>
+                            <li><span>Coordinate System:</span> <strong>EPSG:4326 (Web Mercator)</strong></li>
+                            <li><span>Author:</span> <strong>Muti'ah Az Zahra</strong></li>
+                            <li><span>Institution:</span> <strong>Universitas Bakrie</strong></li>
+                            <li><span>Course Info:</span> <strong>Kapita Selekta Sistem Informasi</strong></li>
+                            <li><span>Creation Date:</span> <strong>May 2026</strong></li>
+                        </ul>
+                    </div>
+                </section>
+
+            </div>
+
+            <footer class="sidebar-footer">
+                <p>&copy; 2026 Dubai WebGIS Portal</p>
+            </footer>
+        </aside>
+
+        <!-- 3. MAP VIEW AREA -->
+        <main class="map-container">
+
+            <!-- Leaflet Map element -->
+            <div id="map"></div>
+
+            <!-- Custom Cartographic Floating Toolbar Overlay -->
+            <div class="map-custom-controls">
+                <button id="btn-toggle-sidebar" class="control-btn" title="Toggle Sidebar Panel">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <button id="btn-zoom-in" class="control-btn" title="Zoom In">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <button id="btn-zoom-out" class="control-btn" title="Zoom Out">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <button id="btn-reset-view" class="control-btn" title="Reset to Initial View">
+                    <i class="fa-solid fa-arrows-to-eye"></i>
+                </button>
+                <button id="btn-locate" class="control-btn" title="My Location">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                </button>
+                <button id="btn-fullscreen" class="control-btn" title="Toggle Fullscreen">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+            </div>
+
+            <!-- Live Coordinate Display Overlay (Floating Card) -->
+            <div class="coordinate-display-panel">
+                <i class="fa-solid fa-compass fa-spin-slow"></i>
+                <span id="live-coords">Lat: 25.2653, Lng: 55.3216</span>
+            </div>
+
+            <!-- Dynamic Notification / Toast Container -->
+            <div class="toast-container" id="notification-toast">
+                <div class="toast-content">
+                    <i class="fa-solid fa-circle-check" id="toast-icon"></i>
+                    <span id="toast-message">Map layers successfully loaded.</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Leaflet.js engine library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Custom WebGIS execution scripts -->
+    <script src="script.js"></script>
+</body>
+
+</html>
