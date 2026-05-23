@@ -155,7 +155,7 @@ function showError(message) {
 // LOAD LAND USE
 // ======================
 
-fetch('data/Land Use Classification.geojson')
+fetch('./data/landuse.geojson')
 
     .then(response => {
 
@@ -238,7 +238,7 @@ fetch('data/Land Use Classification.geojson')
 // LOAD FACILITIES
 // ======================
 
-fetch('data/Public Facilities.geojson')
+fetch('data/public_facilities.geojson')
 
     .then(response => {
 
@@ -328,6 +328,10 @@ fetch('data/Public Facilities.geojson')
     })
 
     .catch(error => {
+
+        console.error('FETCH ERROR:', error);
+
+        alert(error.message);
 
         showError(error.message);
 
@@ -582,7 +586,7 @@ function initCompositionChart() {
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return ` ${context.label.split(' ')[0]}: ${context.raw}%`;
                         }
                     }
